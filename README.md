@@ -15,10 +15,10 @@ O projeto inclui todo o processo de Data Science, desde a captura e limpeza dos 
 ## Estrutura do Projeto
 
 - `README.md`: Documentação completa do projeto
-- `ibovespa_predictor.ipynb`: Notebook Jupyter com a análise completa
-- `ibovespa_raw_data.csv`: Dataset do IBOVESPA utilizado
-- `ibovespa_dashboard.html`: Dashboard interativo para visualização dos resultados
-- `requirements.txt`: Lista de dependências do projeto
+- `notebook.py`: Código Python com a análise e implementação dos modelos
+- `ibovespa_raw_data.csv`: Dataset do IBOVESPA utilizado para análise
+- `dashboard.html`: Dashboard interativo para visualização dos resultados
+- `requirements.txt`: Lista de dependências necessárias para executar o código
 
 ## Metodologia
 
@@ -114,14 +114,6 @@ Com base no modelo ensemble, a previsão para o próximo dia de negociação é:
 2. A série temporal do IBOVESPA apresenta padrões complexos que exigem abordagens sofisticadas
 3. As features de curto prazo (5 dias) têm maior influência nas previsões
 4. O modelo conseguiu atingir a meta de acurácia direcional superior a 70% (82.31%)
-
-## Melhorias Futuras
-
-- Implementar modelos mais avançados como LSTM, XGBoost ou Prophet
-- Incorporar dados macroeconômicos e fatores externos
-- Desenvolver estratégias de trading baseadas nas previsões
-- Implementar um pipeline de atualização automática diária
-- Otimizar hiperparâmetros via validação cruzada
 
 ## Tecnologias Utilizadas
 
