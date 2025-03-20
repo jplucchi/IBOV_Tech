@@ -1,4 +1,3 @@
-# IBOV_Tech
 # Previsão do IBOVESPA - Modelo Preditivo para Séries Temporais
 
 ## Descrição do Projeto
@@ -15,17 +14,17 @@ O projeto inclui todo o processo de Data Science, desde a captura e limpeza dos 
 
 ## Estrutura do Projeto
 
-- `data/`: Contém o dataset do IBOVESPA utilizado
-- `notebooks/`: Jupyter Notebooks com a análise completa
-- `models/`: Implementação dos modelos preditivos
-- `visualizations/`: Gráficos e visualizações geradas
-- `README.md`: Documentação do projeto
+- `README.md`: Documentação completa do projeto
+- `ibovespa_predictor.ipynb`: Notebook Jupyter com a análise completa
+- `ibovespa_raw_data.csv`: Dataset do IBOVESPA utilizado
+- `ibovespa_dashboard.html`: Dashboard interativo para visualização dos resultados
+- `requirements.txt`: Lista de dependências do projeto
 
 ## Metodologia
 
 ### 1. Obtenção e Preparação dos Dados
 
-Os dados históricos do IBOVESPA foram obtidos através do site da Investing.com, cobrindo o período de março de 2019 a fevereiro de 2025. O dataset contém informações diárias sobre:
+Obtive os dados históricos do IBOVESPA através do site da Investing.com, cobrindo o período de março de 2019 a fevereiro de 2025. O dataset contém informações diárias sobre:
 
 - Data
 - Preço de abertura
@@ -35,11 +34,11 @@ Os dados históricos do IBOVESPA foram obtidos através do site da Investing.com
 - Volume de negociação
 - Variação percentual
 
-Após a coleta, realizamos a limpeza dos dados, convertendo o formato das datas, tratando valores ausentes e normalizando os campos numéricos.
+Após a coleta, realizei a limpeza dos dados, convertendo o formato das datas, tratando valores ausentes e normalizando os campos numéricos.
 
 ### 2. Análise Exploratória de Dados (EDA)
 
-Realizamos uma análise exploratória para entender o comportamento da série temporal do IBOVESPA:
+Realizei uma análise exploratória para entender o comportamento da série temporal do IBOVESPA:
 
 - Estatísticas descritivas do preço de fechamento
 - Análise de tendências e sazonalidade
@@ -47,7 +46,7 @@ Realizamos uma análise exploratória para entender o comportamento da série te
 - Cálculo de autocorrelação para identificar padrões temporais
 - Análise de retornos diários e sua distribuição
 
-Descobrimos que:
+Descobri que:
 - A série apresenta alta correlação serial (autocorrelação)
 - É necessário diferenciação para tornar a série estacionária
 - Existem padrões sazonais semanais
@@ -55,7 +54,7 @@ Descobrimos que:
 
 ### 3. Engenharia de Features
 
-Para melhorar o desempenho dos modelos, criamos as seguintes features:
+Para melhorar o desempenho dos modelos, criei as seguintes features:
 
 - Médias móveis (SMA) de diferentes períodos (5, 10, 20 dias)
 - Indicadores de momentum
@@ -66,7 +65,7 @@ Para melhorar o desempenho dos modelos, criamos as seguintes features:
 
 ### 4. Modelagem
 
-Implementamos e comparamos vários modelos:
+Implementei e comparei vários modelos:
 
 1. **Modelo de Média Móvel Simples (SMA)**: Utilizado como baseline
 2. **Regressão Linear Múltipla**: Modelo que utiliza múltiplas variáveis para prever o preço
@@ -116,6 +115,14 @@ Com base no modelo ensemble, a previsão para o próximo dia de negociação é:
 3. As features de curto prazo (5 dias) têm maior influência nas previsões
 4. O modelo conseguiu atingir a meta de acurácia direcional superior a 70% (82.31%)
 
+## Melhorias Futuras
+
+- Implementar modelos mais avançados como LSTM, XGBoost ou Prophet
+- Incorporar dados macroeconômicos e fatores externos
+- Desenvolver estratégias de trading baseadas nas previsões
+- Implementar um pipeline de atualização automática diária
+- Otimizar hiperparâmetros via validação cruzada
+
 ## Tecnologias Utilizadas
 
 - Python
@@ -127,4 +134,3 @@ Com base no modelo ensemble, a previsão para o próximo dia de negociação é:
 ## Autor
 
 JP Lucchi
-
