@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard IBOVESPA - Tech Challenge</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            color: #4a5568;
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .prediction-card {
+            padding: 25px;
+        }
+        .prediction-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .prediction-item {
+            text-align: center;
+        }
+        .prediction-label {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .prediction-value {
+            color: #2b6cb0;
+            font-size: 36px;
+            font-weight: 700;
+        }
+        .prediction-value.secondary {
+            font-size: 24px;
+            color: #4a5568;
+        }
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .metric-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        .metric-label {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .metric-value.accuracy {
+            color: #3182ce;
+        }
+        .metric-value.mae {
+            color: #38a169;
+        }
+        .metric-value.rmse {
+            color: #dd6b20;
+        }
+        .metric-value.r2 {
+            color: #805ad5;
+        }
+        .chart-container {
+            height: 350px;
+            position: relative;
+        }
+        .chart-container.small {
+            height: 250px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: #e2e8f0;
+            color: #4a5568;
+        }
+        .button.active {
+            background-color: #3182ce;
+            color: white;
+        }
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #718096;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .metrics-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dashboard de Previsão do IBOVESPA</h1>
+            <p>Tech Challenge - JP Lucchi</p>
+        </header>
+
+        <!-- Previsão para o próximo dia -->
+        <div class="card prediction-card">
+            <h2 class="card-title">Previsão para o Próximo Dia</h2>
+            <div class="prediction-content">
+                <div class="prediction-item">
+                    <p class="prediction-label">Data</p>
+                    <p class="prediction-value secondary">01/03/2025</p>
+                </div>
+                <div class="prediction-item">
+                    <p class="prediction-label">Previsão (Modelo Ensemble)</p>
+                    <p class="prediction-value">124.63</p>
+                </div>
+                <div class="prediction-item">
+                    <p class="prediction-label">Último Fechamento</p>
+                    <p class="prediction-value secondary">122.80</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Métricas do Modelo -->
+        <div class="metrics-container">
+            <div class="metric-card">
+                <p class="metric-label">Acurácia Direcional</p>
+                <p class="metric-value accuracy">82.31%</p>
+            </div>
+            <div class="metric-card">
+                <p class="metric-label">MAE</p>
+                <p class="metric-value mae">1.75</p>
+            </div>
+            <div class="metric-card">
+                <p class="metric-label">RMSE</p>
+                <p class="metric-value rmse">2.06</p>
+            </div>
+            <div class="metric-card">
+                <p class="metric-label">R²</p>
+                <p class="metric-value r2">0.74</p>
+            </div>
+        </div>
+
+        <!-- Gráfico de Previsões vs Valores Reais -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Previsões vs Valores Reais</h2>
+                <div class="button-group">
+                    <button class="button" onclick="updateTimeframe('week')">7 dias</button>
+                    <button class="button" onclick="updateTimeframe('twoWeeks')">14 dias</button>
+                    <button class="button active" onclick="updateTimeframe('month')">21 dias</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="predictionChart"></canvas>
+            </div>
+        </div>
+
+        <div class="two-columns">
+            <!-- Comparação de Modelos -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Comparação de Modelos</h2>
+                    <select id="metricSelect" onchange="updateMetricChart()">
+                        <option value="dirAccuracy">Acurácia Direcional</option>
+                        <option value="mae">MAE</option>
+                        <option value="rmse">RMSE</option>
+                        <option value="r2">R²</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="modelComparisonChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Importância das Features -->
+            <div class="card">
+                <h2 class="card-title">Importância das Features</h2>
+                <div class="chart-container">
+                    <canvas id="featureImportanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Erros de Previsão -->
+        <div class="card">
+            <h2 class="card-title">Erro de Previsão</h2>
+            <div class="chart-container small">
+                <canvas id="errorChart"></canvas>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2025 JP Lucchi - Tech Challenge - Data Analytics</p>
+        </footer>
+    </div>
+
+    <script>
+        // Dados simulados baseados nas análises que fizemos
+        const lastMonthData = [
+            { date: '2025-01-31', actual: 126.135, predicted: 125.96, error: 0.18 },
+            { date: '2025-02-03', actual: 125.831, predicted: 126.24, error: -0.41 },
+            { date: '2025-02-04', actual: 125.533, predicted: 126.01, error: -0.48 },
+            { date: '2025-02-05', actual: 125.245, predicted: 125.83, error: -0.58 },
+            { date: '2025-02-06', actual: 126.472, predicted: 125.42, error: 1.05 },
+            { date: '2025-02-07', actual: 126.682, predicted: 126.65, error: 0.03 },
+            { date: '2025-02-10', actual: 127.221, predicted: 126.87, error: 0.35 },
+            { date: '2025-02-11', actual: 128.552, predicted: 127.46, error: 1.09 },
+            { date: '2025-02-12', actual: 128.092, predicted: 128.65, error: -0.56 },
+            { date: '2025-02-13', actual: 127.564, predicted: 128.24, error: -0.68 },
+            { date: '2025-02-14', actual: 127.642, predicted: 127.72, error: -0.08 },
+            { date: '2025-02-17', actual: 126.932, predicted: 127.81, error: -0.88 },
+            { date: '2025-02-18', actual: 127.601, predicted: 127.12, error: 0.48 },
+            { date: '2025-02-19', actual: 127.129, predicted: 127.82, error: -0.69 },
+            { date: '2025-02-20', actual: 127.128, predicted: 127.28, error: -0.15 },
+            { date: '2025-02-21', actual: 125.401, predicted: 127.19, error: -1.79 },
+            { date: '2025-02-24', actual: 125.980, predicted: 125.58, error: 0.40 },
+            { date: '2025-02-25', actual: 124.769, predicted: 126.12, error: -1.35 },
+            { date: '2025-02-26', actual: 124.799, predicted: 124.96, error: -0.16 },
+            { date: '2025-02-27', actual: 122.799, predicted: 124.88, error: -2.08 },
+            { date: '2025-02-28', actual: 122.799, predicted: 123.12, error: -0.32 },
+        ];
+
+        const modelsComparison = {
+            models: ['SMA', 'Regressão Linear', 'Auto-Regressivo', 'Ensemble'],
+            dirAccuracy: [47.96, 97.28, 46.26, 82.31],
+            mae: [1.18, 2.82, 3.69, 1.75],
+            rmse: [1.47, 2.83, 4.53, 2.06],
+            r2: [0.87, 0.51, -0.26, 0.74]
+        };
+
+        const featureImportance = [
+            { name: 'SMA 5 dias', value: 2.5 },
+            { name: 'Lag 3 close', value: 0.5 },
+            { name: 'Lag 2 close', value: 0.5 },
+            { name: 'Momentum 5', value: 0.5 },
+            { name: 'Lag 1 close', value: 0.5 },
+            { name: 'High', value: 0.24 },
+            { name: 'Low', value: 0.22 },
+            { name: 'Daily Range', value: 0.09 },
+            { name: 'Outras', value: 0.42 }
+        ];
+
+        // Formatadores
+        const formatDate = (dateStr) => {
+            const date = new Date(dateStr);
+            return `${date.getDate()}/${date.getMonth() + 1}`;
+        };
+
+        // Variáveis para controle de estado
+        let currentTimeframe = 'month';
+        let currentMetric = 'dirAccuracy';
+
+        // Função para filtrar dados com base no período selecionado
+        const filterData = (timeframe) => {
+            let filtered = [...lastMonthData];
+            if (timeframe === 'week') {
+                filtered = lastMonthData.slice(-7);
+            } else if (timeframe === 'twoWeeks') {
+                filtered = lastMonthData.slice(-14);
+            }
+            return filtered;
+        };
+
+        // Inicializar gráficos
+        let predictionChart, modelComparisonChart, featureImportanceChart, errorChart;
+
+        // Função para criar o gráfico de previsões
+        const createPredictionChart = (data) => {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            
+            if (predictionChart) {
+                predictionChart.destroy();
+            }
+            
+            predictionChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => formatDate(d.date)),
+                    datasets: [
+                        {
+                            label: 'Valor Real',
+                            data: data.map(d => d.actual),
+                            backgroundColor: 'rgba(66, 153, 225, 0.2)',
+                            borderColor: 'rgba(66, 153, 225, 1)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Previsão',
+                            data: data.map(d => d.predicted),
+                            backgroundColor: 'rgba(72, 187, 120, 0.2)',
+                            borderColor: 'rgba(72, 187, 120, 1)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            borderDash: [5, 5],
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(3)}`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        // Função para criar o gráfico de comparação de modelos
+        const createModelComparisonChart = (metric) => {
+            const ctx = document.getElementById('modelComparisonChart').getContext('2d');
+            
+            if (modelComparisonChart) {
+                modelComparisonChart.destroy();
+            }
+            
+            const metricLabels = {
+                dirAccuracy: 'Acurácia Direcional (%)',
+                mae: 'MAE',
+                rmse: 'RMSE',
+                r2: 'R²'
+            };
+
+            const colors = metric === 'r2' 
+                ? modelsComparison.r2.map(val => val >= 0 ? 'rgba(72, 187, 120, 0.7)' : 'rgba(245, 101, 101, 0.7)')
+                : metric === 'dirAccuracy' 
+                    ? 'rgba(66, 153, 225, 0.7)' 
+                    : 'rgba(237, 137, 54, 0.7)';
+            
+            modelComparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: modelsComparison.models,
+                    datasets: [
+                        {
+                            label: metricLabels[metric],
+                            data: modelsComparison[metric],
+                            backgroundColor: colors,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${metricLabels[metric]}: ${context.raw.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: metric !== 'r2',
+                            grid: {
+                                drawBorder: false
+                            },
+                            title: {
+                                display: true,
+                                text: metricLabels[metric]
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        // Função para criar o gráfico de importância das features
+        const createFeatureImportanceChart = () => {
+            const ctx = document.getElementById('featureImportanceChart').getContext('2d');
+            
+            if (featureImportanceChart) {
+                featureImportanceChart.destroy();
+            }
+            
+            // Ordenar por importância
+            const sortedFeatures = [...featureImportance].sort((a, b) => b.value - a.value);
+            
+            featureImportanceChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: sortedFeatures.map(f => f.name),
+                    datasets: [
+                        {
+                            data: sortedFeatures.map(f => f.value),
+                            backgroundColor: [
+                                'rgba(66, 153, 225, 0.7)',
+                                'rgba(72, 187, 120, 0.7)',
+                                'rgba(237, 137, 54, 0.7)',
+                                'rgba(159, 122, 234, 0.7)',
+                                'rgba(245, 101, 101, 0.7)',
+                                'rgba(56, 178, 172, 0.7)',
+                                'rgba(250, 202, 21, 0.7)',
+                                'rgba(237, 100, 166, 0.7)',
+                                'rgba(160, 174, 192, 0.7)'
+                            ],
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 15,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ${percentage}% (${value.toFixed(2)})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        // Função para criar o gráfico de erros
+        const createErrorChart = (data) => {
+            const ctx = document.getElementById('errorChart').getContext('2d');
+            
+            if (errorChart) {
+                errorChart.destroy();
+            }
+            
+            errorChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => formatDate(d.date)),
+                    datasets: [
+                        {
+                            label: 'Erro',
+                            data: data.map(d => d.error),
+                            backgroundColor: data.map(d => d.error > 0 ? 'rgba(245, 101, 101, 0.7)' : 'rgba(72, 187, 120, 0.7)'),
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Erro: ${context.raw.toFixed(3)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                drawBorder: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Erro'
+                            },
+                            suggestedMin: -3,
+                            suggestedMax: 3
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        // Atualizar período
+        const updateTimeframe = (timeframe) => {
+            currentTimeframe = timeframe;
+            const data = filterData(timeframe);
+            
+            // Atualizar gráficos
+            createPredictionChart(data);
+            createErrorChart(data);
+            
+            // Atualizar botões
+            document.querySelectorAll('.button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.button[onclick="updateTimeframe('${timeframe}')"]`).classList.add('active');
+        };
+
+        // Atualizar métrica
+        const updateMetricChart = () => {
+            const select = document.getElementById('metricSelect');
+            currentMetric = select.value;
+            createModelComparisonChart(currentMetric);
+        };
+
+        // Inicializar todos os gráficos quando a página carregar
+        window.onload = function() {
+            const initialData = filterData(currentTimeframe);
+            createPredictionChart(initialData);
+            createModelComparisonChart(currentMetric);
+            createFeatureImportanceChart();
+            createErrorChart(initialData);
+        };
+    </script>
+</body>
+</html>
