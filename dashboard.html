@@ -3,739 +3,531 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Jornada de Previsão do IBOVESPA - Dashboard Interativo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+    <title>IBOVESPA - Modelo Preditivo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <style>
-        * {
+        :root {
+            --primary-color: #3a86ff;
+            --secondary-color: #ff6b6b;
+            --background-color: #f8f9fa;
+            --card-color: #ffffff;
+            --text-color: #343a40;
+            --border-color: #dee2e6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        body {
-            background-color: #f5f7fa;
-            padding: 20px;
-            color: #2d3748;
-            line-height: 1.6;
-        }
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
+        
         header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .intro {
-            background-color: #ebf8ff;
-            border-left: 4px solid #3182ce;
-            padding: 15px 20px;
-            margin-bottom: 30px;
-            border-radius: 5px;
-        }
-        .intro p {
-            margin-bottom: 10px;
-        }
-        h1 {
-            color: #2d3748;
-            margin-bottom: 10px;
-            font-size: 32px;
-        }
-        h2 {
-            color: #4a5568;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        p {
-            margin-bottom: 20px;
-        }
-        .storytelling {
-            margin-bottom: 20px;
-        }
-        .card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 25px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-        }
-        .chapter {
-            padding: 15px 0;
-            margin-bottom: 10px;
-        }
-        .chapter-title {
-            display: flex;
-            align-items: center;
-            font-size: 22px;
-            color: #3182ce;
-            margin-bottom: 15px;
-        }
-        .chapter-number {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            background-color: #3182ce;
+            background-color: #1a1a2e;
             color: white;
-            border-radius: 50%;
-            margin-right: 15px;
-            font-weight: bold;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 10px;
-        }
-        .card-title {
-            color: #4a5568;
-            font-size: 20px;
-            font-weight: 600;
-        }
-        .card-subtitle {
-            color: #718096;
-            font-size: 16px;
-            margin-top: -10px;
-            margin-bottom: 15px;
-        }
-        .insight {
-            background-color: #f0fff4;
-            border-left: 4px solid #38a169;
-            padding: 10px 15px;
-            margin: 15px 0;
-            border-radius: 4px;
-        }
-        .insight-title {
-            font-weight: bold;
-            color: #38a169;
-            margin-bottom: 5px;
-        }
-        .prediction-card {
-            padding: 25px;
-            background: linear-gradient(135deg, #f6f9fc 0%, #f1f8ff 100%);
-        }
-        .prediction-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .prediction-item {
+        
+        header h1 {
+            margin: 0;
+            padding: 0 20px;
+            font-size: 24px;
             text-align: center;
         }
-        .prediction-label {
-            color: #718096;
-            font-size: 14px;
-            margin-bottom: 5px;
-        }
-        .prediction-value {
-            color: #2b6cb0;
-            font-size: 36px;
-            font-weight: 700;
-        }
-        .prediction-value.secondary {
-            font-size: 24px;
-            color: #4a5568;
-        }
-        .metrics-container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        .metric-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-        .metric-card:hover {
-            transform: translateY(-5px);
-        }
-        .metric-label {
-            color: #718096;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        .metric-value {
-            font-size: 24px;
-            font-weight: 700;
-        }
-        .metric-desc {
-            font-size: 12px;
-            color: #718096;
-            margin-top: 8px;
-        }
-        .metric-value.accuracy {
-            color: #3182ce;
-        }
-        .metric-value.mae {
-            color: #38a169;
-        }
-        .metric-value.rmse {
-            color: #dd6b20;
-        }
-        .metric-value.r2 {
-            color: #805ad5;
-        }
-        .chart-container {
-            height: 350px;
-            position: relative;
-        }
-        .chart-container.small {
-            height: 250px;
-        }
-        .button-group {
+        
+        .tab-container {
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
         }
-        .button {
-            padding: 8px 16px;
-            border-radius: 4px;
-            border: none;
-            font-size: 14px;
+        
+        .tab {
+            padding: 10px 20px;
             cursor: pointer;
-            background-color: #e2e8f0;
-            color: #4a5568;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-color);
+            position: relative;
             transition: all 0.3s ease;
         }
-        .button:hover {
-            background-color: #cbd5e0;
+        
+        .tab.active {
+            color: var(--primary-color);
         }
-        .button.active {
-            background-color: #3182ce;
-            color: white;
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-color);
         }
-        .two-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
+        
+        .tab-content {
+            display: none;
         }
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            color: #718096;
-            font-size: 14px;
-            border-top: 1px solid #e2e8f0;
+        
+        .tab-content.active {
+            display: block;
         }
-        .conclusion {
-            background-color: #ebf8ff;
+        
+        .info-card {
+            background-color: #e2f0ff;
             border-radius: 8px;
             padding: 20px;
-            margin-top: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
-        .conclusion h2 {
-            color: #2b6cb0;
+        
+        .info-card h2 {
+            margin-top: 0;
+            font-size: 20px;
+            color: #1a73e8;
         }
-        @media (max-width: 768px) {
-            .metrics-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .two-columns {
-                grid-template-columns: 1fr;
-            }
+        
+        .chart-container {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            height: 400px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .metric-card.accuracy {
+            background-color: #e6f7e9;
+        }
+        
+        .metric-card.rmse {
+            background-color: #e6f0fa;
+        }
+        
+        .metric-card.r2 {
+            background-color: #f0e6fa;
+        }
+        
+        .metric-card.mape {
+            background-color: #fef8e6;
+        }
+        
+        .metric-card h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #555;
+        }
+        
+        .metric-card p {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-card .subtitle {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .two-columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .prediction-card {
+            background-color: #fffaeb;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .prediction-card h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #b7791f;
+        }
+        
+        .prediction-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0e9d8;
+        }
+        
+        .prediction-label {
+            font-weight: 500;
+        }
+        
+        .prediction-value {
+            font-weight: bold;
+        }
+        
+        .negative {
+            color: #e53e3e;
+        }
+        
+        .positive {
+            color: #38a169;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        thead {
+            background-color: #f8f9fa;
+        }
+        
+        thead th {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tbody tr:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .highlight-row {
+            background-color: #e2f0ff !important;
+            font-weight: 500;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #666;
+            margin-top: 40px;
+            border-top: 1px solid var(--border-color);
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>Modelo Preditivo IBOVESPA - Tech Challenge</h1>
+        <div style="text-align: center; margin-top: 5px;">
+            <span style="font-size: 16px; color: #e0e0e0;">JP Lucchi</span>
+        </div>
+    </header>
+    
     <div class="container">
-        <header>
-            <h1>A Jornada de Previsão do IBOVESPA</h1>
-            <p>Uma análise preditiva do principal índice da bolsa brasileira</p>
-        </header>
-
-        <div class="intro">
-            <p>Este dashboard interativo apresenta os resultados de um estudo aprofundado sobre a previsibilidade do IBOVESPA. Combinando técnicas de análise de séries temporais e machine learning, consegui desenvolver um modelo com acurácia direcional superior a 80%.</p>
-            <p>Navegue pelos gráficos e análises para entender como podemos prever o comportamento deste importante indicador do mercado financeiro brasileiro.</p>
+        <div class="tab-container">
+            <button class="tab active" onclick="openTab(event, 'overview')">Visão Geral</button>
+            <button class="tab" onclick="openTab(event, 'prediction')">Previsão</button>
+            <button class="tab" onclick="openTab(event, 'features')">Análise de Features</button>
+            <button class="tab" onclick="openTab(event, 'metrics')">Métricas</button>
         </div>
-
-        <div class="chapter">
-            <div class="chapter-title">
-                <span class="chapter-number">1</span>
-                <h2>O Desafio da Previsão</h2>
+        
+        <!-- Aba Visão Geral -->
+        <div id="overview" class="tab-content active">
+            <div class="info-card">
+                <h2>Resumo do Projeto</h2>
+                <p>Este dashboard apresenta os resultados do modelo preditivo desenvolvido para prever o valor de fechamento diário do índice IBOVESPA.</p>
+                <p>O modelo de Regressão Linear Múltipla alcançou uma acurácia de <strong>99,86%</strong> no conjunto de teste, superando significativamente o requisito mínimo de 70%.</p>
+                <p>As features mais importantes para o modelo foram relacionadas ao retorno logarítmico, valores mínimos e a faixa de variação verdadeira (True Range).</p>
             </div>
             
-            <!-- Previsão para o próximo dia -->
-            <div class="card prediction-card">
-                <div class="card-header">
-                    <h3 class="card-title">Previsão para o Próximo Dia</h3>
+            <div class="chart-container">
+                <canvas id="overview-chart"></canvas>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card accuracy">
+                    <h3>Acurácia</h3>
+                    <p>99,86%</p>
+                    <div class="subtitle">Conjunto de Teste</div>
                 </div>
-                <p class="card-subtitle">O resultado final da nossa jornada analítica com modelos avançados</p>
-                <div class="prediction-content">
-                    <div class="prediction-item">
-                        <p class="prediction-label">Data</p>
-                        <p class="prediction-value secondary">01/03/2025</p>
-                    </div>
-                    <div class="prediction-item">
-                        <p class="prediction-label">Previsão (Modelo LSTM)</p>
-                        <p class="prediction-value">124.98</p>
-                    </div>
-                    <div class="prediction-item">
-                        <p class="prediction-label">Último Fechamento</p>
-                        <p class="prediction-value secondary">122.80</p>
-                    </div>
+                <div class="metric-card rmse">
+                    <h3>RMSE</h3>
+                    <p>0,2337</p>
+                    <div class="subtitle">Erro Quadrático Médio</div>
                 </div>
-                <div class="insight">
-                    <p class="insight-title">Insight:</p>
-                    <p>O modelo LSTM, com sua acurácia direcional de 88.2%, prevê uma alta de 1.77% para o próximo dia de negociação. As redes neurais conseguem capturar padrões complexos e não-lineares nos dados, oferecendo previsões mais precisas que os modelos tradicionais.</p>
+                <div class="metric-card r2">
+                    <h3>R²</h3>
+                    <p>0,9973</p>
+                    <div class="subtitle">Coeficiente de Determinação</div>
                 </div>
             </div>
         </div>
-
-        <div class="chapter">
-            <div class="chapter-title">
-                <span class="chapter-number">2</span>
-                <h2>Jornada de Modelagem e Resultados</h2>
+        
+        <!-- Aba Previsão -->
+        <div id="prediction" class="tab-content">
+            <div class="info-card">
+                <h2>Previsão do IBOVESPA</h2>
+                <p>O gráfico abaixo mostra os valores reais e previstos pelo modelo para os últimos 30 dias, além da previsão para o próximo dia de negociação.</p>
             </div>
             
-            <!-- Métricas do Modelo -->
-            <div class="metrics-container">
-                <div class="metric-card">
-                    <p class="metric-label">Acurácia Direcional</p>
-                    <p class="metric-value accuracy">82.31%</p>
-                    <p class="metric-desc">Capacidade de prever corretamente a direção do movimento</p>
-                </div>
-                <div class="metric-card">
-                    <p class="metric-label">MAE</p>
-                    <p class="metric-value mae">1.75</p>
-                    <p class="metric-desc">Erro médio absoluto em pontos do índice</p>
-                </div>
-                <div class="metric-card">
-                    <p class="metric-label">RMSE</p>
-                    <p class="metric-value rmse">2.06</p>
-                    <p class="metric-desc">Raiz do erro quadrático médio</p>
-                </div>
-                <div class="metric-card">
-                    <p class="metric-label">R²</p>
-                    <p class="metric-value r2">0.74</p>
-                    <p class="metric-desc">Coeficiente de determinação (qualidade do ajuste)</p>
-                </div>
-            </div>
-
-            <!-- Gráfico de Previsões vs Valores Reais -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">A Precisão do Modelo: Previsões vs Valores Reais</h3>
-                    <div class="button-group">
-                        <button class="button" onclick="updateTimeframe('week')">7 dias</button>
-                        <button class="button" onclick="updateTimeframe('twoWeeks')">14 dias</button>
-                        <button class="button active" onclick="updateTimeframe('month')">21 dias</button>
-                    </div>
-                </div>
-                <p class="card-subtitle">Comparação entre os valores previstos pelo modelo e os valores reais do IBOVESPA</p>
-                <div class="chart-container">
-                    <canvas id="predictionChart"></canvas>
-                </div>
-                <div class="insight">
-                    <p class="insight-title">Insight:</p>
-                    <p>Observe como o modelo consegue capturar não apenas a tendência geral, mas também muitas das oscilações diárias do índice, evidenciando sua robustez.</p>
-                </div>
+            <div class="chart-container">
+                <canvas id="prediction-chart"></canvas>
             </div>
             
             <div class="two-columns">
-                <!-- Comparação de Modelos -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">A Batalha dos Modelos Tradicionais</h3>
-                        <select id="metricSelect" onchange="updateMetricChart()">
-                            <option value="dirAccuracy">Acurácia Direcional</option>
-                            <option value="mae">MAE</option>
-                            <option value="rmse">RMSE</option>
-                            <option value="r2">R²</option>
-                        </select>
+                <div class="prediction-card">
+                    <h3>Próxima Previsão</h3>
+                    <div class="prediction-row">
+                        <span class="prediction-label">Data:</span>
+                        <span class="prediction-value">03/03/2025</span>
                     </div>
-                    <p class="card-subtitle">Comparando o desempenho de diferentes abordagens de modelagem</p>
-                    <div class="chart-container">
-                        <canvas id="modelComparisonChart"></canvas>
+                    <div class="prediction-row">
+                        <span class="prediction-label">Último fechamento:</span>
+                        <span class="prediction-value">122,799</span>
                     </div>
-                    <div class="insight">
-                        <p class="insight-title">Insight:</p>
-                        <p>Cada modelo tem seus pontos fortes: a Regressão Linear lidera em acurácia direcional, enquanto o SMA tem o menor erro absoluto. O modelo Ensemble combina estas forças.</p>
+                    <div class="prediction-row">
+                        <span class="prediction-label">Valor previsto:</span>
+                        <span class="prediction-value">122,196</span>
+                    </div>
+                    <div class="prediction-row">
+                        <span class="prediction-label">Variação prevista:</span>
+                        <span class="prediction-value negative">-0,49%</span>
                     </div>
                 </div>
-
-                <!-- Importância das Features -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Os Pilares da Previsão</h3>
-                    </div>
-                    <p class="card-subtitle">Descobrindo quais fatores mais influenciam as previsões do modelo</p>
-                    <div class="chart-container">
-                        <canvas id="featureImportanceChart"></canvas>
-                    </div>
-                    <div class="insight">
-                        <p class="insight-title">Insight:</p>
-                        <p>A média móvel de 5 dias é surpreendentemente o fator mais importante, seguida pelos valores recentes de fechamento, revelando o poder dos padrões de curto prazo.</p>
-                    </div>
+                
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="error-chart"></canvas>
                 </div>
             </div>
         </div>
-
-        <div class="chapter">
-            <div class="chapter-title">
-                <span class="chapter-number">3</span>
-                <h2>Explorando Modelos Avançados</h2>
+        
+        <!-- Aba Análise de Features -->
+        <div id="features" class="tab-content">
+            <div class="info-card">
+                <h2>Análise de Features</h2>
+                <p>Esta seção mostra a importância relativa de cada feature para o modelo de previsão.</p>
+                <p>O retorno logarítmico é a feature mais importante, seguido pelos valores mínimos e pelo True Range (amplitude verdadeira).</p>
             </div>
             
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Evolução dos Modelos Preditivos</h3>
+            <div class="chart-container">
+                <canvas id="features-chart"></canvas>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Importância (%)</th>
+                        <th>Coeficiente</th>
+                        <th>Interpretação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Log Return</td>
+                        <td>76,59%</td>
+                        <td>67,4888</td>
+                        <td>Forte relação positiva com o valor futuro</td>
+                    </tr>
+                    <tr>
+                        <td>Mínima</td>
+                        <td>6,85%</td>
+                        <td>6,0332</td>
+                        <td>Preço mínimo influencia positivamente</td>
+                    </tr>
+                    <tr>
+                        <td>True Range</td>
+                        <td>6,72%</td>
+                        <td>5,9176</td>
+                        <td>Maior volatilidade → tendência de alta</td>
+                    </tr>
+                    <tr>
+                        <td>Máxima</td>
+                        <td>6,64%</td>
+                        <td>-5,8494</td>
+                        <td>Relação negativa (possível reversão)</td>
+                    </tr>
+                    <tr>
+                        <td>Trend-30</td>
+                        <td>0,75%</td>
+                        <td>-0,6638</td>
+                        <td>Tendência longa negativa → possível reversão</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Aba Métricas -->
+        <div id="metrics" class="tab-content">
+            <div class="info-card">
+                <h2>Métricas do Modelo</h2>
+                <p>O modelo de Regressão Linear Múltipla apresentou excelente desempenho, com acurácia superior a 99% em todos os conjuntos (treinamento, validação e teste).</p>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card accuracy">
+                    <h3>Acurácia</h3>
+                    <p>99,86%</p>
+                    <div class="subtitle">100 - MAPE</div>
                 </div>
-                <p class="card-subtitle">Comparando os modelos tradicionais com abordagens de aprendizado profundo e séries temporais avançadas</p>
-                
-                <div class="metrics-container">
-                    <div class="metric-card">
-                        <p class="metric-label">Prophet</p>
-                        <p class="metric-value accuracy">85.4%</p>
-                        <p class="metric-desc">Acurácia direcional do modelo Facebook Prophet</p>
-                    </div>
-                    <div class="metric-card">
-                        <p class="metric-label">LSTM</p>
-                        <p class="metric-value accuracy">88.2%</p>
-                        <p class="metric-desc">Acurácia direcional da rede neural LSTM</p>
-                    </div>
-                    <div class="metric-card">
-                        <p class="metric-label">Prophet MAE</p>
-                        <p class="metric-value mae">1.5</p>
-                        <p class="metric-desc">Erro médio absoluto do modelo Prophet</p>
-                    </div>
-                    <div class="metric-card">
-                        <p class="metric-label">LSTM MAE</p>
-                        <p class="metric-value mae">1.3</p>
-                        <p class="metric-desc">Erro médio absoluto da rede neural LSTM</p>
-                    </div>
+                <div class="metric-card rmse">
+                    <h3>RMSE</h3>
+                    <p>0,2337</p>
+                    <div class="subtitle">Erro Quadrático Médio</div>
                 </div>
-                
-                <div class="chart-container">
-                    <canvas id="advancedModelsChart"></canvas>
+                <div class="metric-card r2">
+                    <h3>R²</h3>
+                    <p>0,9973</p>
+                    <div class="subtitle">Coef. de Determinação</div>
                 </div>
-                
-                <div class="insight">
-                    <p class="insight-title">Insight:</p>
-                    <p>Os modelos avançados mostram ganhos significativos de precisão. O LSTM captura padrões não-lineares complexos que os modelos tradicionais não conseguem identificar, enquanto o Prophet é particularmente eficaz em detectar sazonalidades no mercado.</p>
+                <div class="metric-card mape">
+                    <h3>MAPE</h3>
+                    <p>0,14%</p>
+                    <div class="subtitle">Erro Percentual Médio</div>
                 </div>
             </div>
             
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Componentes do Modelo Prophet</h3>
-                </div>
-                <p class="card-subtitle">Visualização dos componentes de tendência e sazonalidade identificados pelo modelo</p>
-                
-                <div class="two-columns">
-                    <div>
-                        <h4>Tendência de Longo Prazo</h4>
-                        <div class="chart-container small">
-                            <canvas id="prophetTrendChart"></canvas>
-                        </div>
-                    </div>
-                    <div>
-                        <h4>Sazonalidade Semanal</h4>
-                        <div class="chart-container small">
-                            <canvas id="prophetWeeklyChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="insight">
-                    <p class="insight-title">Insight:</p>
-                    <p>O Prophet decompõe a série temporal em componentes interpretáveis, revelando uma tendência geral de alta no longo prazo, com padrões semanais consistentes mostrando maior probabilidade de altas às segundas e quartas, e quedas às sextas.</p>
-                </div>
+            <h3>Comparação de Modelos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Modelo</th>
+                        <th>Acurácia</th>
+                        <th>RMSE</th>
+                        <th>R²</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight-row">
+                        <td>Regressão Linear Múltipla</td>
+                        <td>99,86%</td>
+                        <td>0,2337</td>
+                        <td>0,9973</td>
+                    </tr>
+                    <tr>
+                        <td>ARIMA Simplificado</td>
+                        <td>99,68%</td>
+                        <td>0,5244</td>
+                        <td>0,9862</td>
+                    </tr>
+                    <tr>
+                        <td>Média Móvel Ponderada</td>
+                        <td>99,08%</td>
+                        <td>1,4353</td>
+                        <td>0,8967</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="info-card" style="background-color: #f8f9fa;">
+                <h3>Validação do Modelo</h3>
+                <p>O modelo foi validado usando técnicas de separação de dados em conjuntos de treinamento (70%), validação (15%) e teste (15%).</p>
+                <p>O período dos dados utilizados vai de março/2019 até fevereiro/2025, totalizando 1.465 dias de negociação após o tratamento de dados.</p>
+                <p>A elevada acurácia do modelo sugere uma excelente capacidade preditiva para o índice IBOVESPA, superando com folga o requisito mínimo de 70% de acurácia.</p>
             </div>
         </div>
-
-        <div class="chapter">
-            <div class="chapter-title">
-                <span class="chapter-number">4</span>
-                <h2>Analisando Falhas e Sucessos</h2>
-            </div>
-            
-            <!-- Erros de Previsão -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Aprendendo com os Erros</h3>
-                </div>
-                <p class="card-subtitle">Análise dos desvios entre valores previstos e reais</p>
-                <div class="chart-container small">
-                    <canvas id="errorChart"></canvas>
-                </div>
-                <div class="insight">
-                    <p class="insight-title">Insight:</p>
-                    <p>Os erros mais significativos tendem a ocorrer em dias de alta volatilidade ou eventos inesperados de mercado. O modelo mantém erros menores em períodos de estabilidade.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="chapter">
-            <div class="chapter-title">
-                <span class="chapter-number">5</span>
-                <h2>Mergulhando nas Redes Neurais</h2>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Arquitetura LSTM: Capturando Memória de Longo Prazo</h3>
-                </div>
-                <p class="card-subtitle">Como as redes neurais LSTM conseguem lembrar padrões em séries temporais</p>
-                
-                <div style="text-align: center; padding: 20px;">
-                    <svg width="700" height="300" viewBox="0 0 700 300" style="max-width: 100%;">
-                        <!-- Background -->
-                        <rect width="700" height="300" fill="#f8fafc" rx="10" ry="10"/>
-                        
-                        <!-- Camada de Entrada -->
-                        <g transform="translate(50, 150)">
-                            <rect width="80" height="120" fill="#ebf8ff" stroke="#3182ce" stroke-width="2" rx="5" ry="5"/>
-                            <text x="40" y="-10" text-anchor="middle" fill="#2d3748" font-size="14">Entrada</text>
-                            <text x="40" y="60" text-anchor="middle" fill="#2d3748" font-size="12">Sequência</text>
-                            <text x="40" y="75" text-anchor="middle" fill="#2d3748" font-size="12">de 20 dias</text>
-                        </g>
-                        
-                        <!-- LSTM Layer 1 -->
-                        <g transform="translate(180, 130)">
-                            <rect width="120" height="160" fill="#e6fffa" stroke="#38b2ac" stroke-width="2" rx="5" ry="5"/>
-                            <text x="60" y="-10" text-anchor="middle" fill="#2d3748" font-size="14">LSTM Layer 1</text>
-                            <text x="60" y="80" text-anchor="middle" fill="#2d3748" font-size="12">64 unidades</text>
-                            <text x="60" y="95" text-anchor="middle" fill="#2d3748" font-size="10">return_sequences=True</text>
-                            
-                            <!-- LSTM Cell Components -->
-                            <rect x="30" y="30" width="60" height="40" fill="#4fd1c5" rx="3" ry="3" opacity="0.7"/>
-                            <text x="60" y="55" text-anchor="middle" fill="#2d3748" font-size="10">Forget Gate</text>
-                            
-                            <rect x="30" y="120" width="60" height="30" fill="#4fd1c5" rx="3" ry="3" opacity="0.7"/>
-                            <text x="60" y="140" text-anchor="middle" fill="#2d3748" font-size="10">Cell State</text>
-                        </g>
-                        
-                        <!-- Dropout Layer 1 -->
-                        <g transform="translate(330, 130)">
-                            <rect width="60" height="160" fill="#fff5f5" stroke="#fc8181" stroke-width="2" rx="5" ry="5" stroke-dasharray="5,5"/>
-                            <text x="30" y="-10" text-anchor="middle" fill="#2d3748" font-size="14">Dropout</text>
-                            <text x="30" y="80" text-anchor="middle" fill="#2d3748" font-size="12">20%</text>
-                        </g>
-                        
-                        <!-- LSTM Layer 2 -->
-                        <g transform="translate(420, 130)">
-                            <rect width="120" height="160" fill="#e6fffa" stroke="#38b2ac" stroke-width="2" rx="5" ry="5"/>
-                            <text x="60" y="-10" text-anchor="middle" fill="#2d3748" font-size="14">LSTM Layer 2</text>
-                            <text x="60" y="80" text-anchor="middle" fill="#2d3748" font-size="12">64 unidades</text>
-                            
-                            <!-- LSTM Cell Components -->
-                            <rect x="30" y="30" width="60" height="40" fill="#4fd1c5" rx="3" ry="3" opacity="0.7"/>
-                            <text x="60" y="55" text-anchor="middle" fill="#2d3748" font-size="10">Forget Gate</text>
-                            
-                            <rect x="30" y="120" width="60" height="30" fill="#4fd1c5" rx="3" ry="3" opacity="0.7"/>
-                            <text x="60" y="140" text-anchor="middle" fill="#2d3748" font-size="10">Cell State</text>
-                        </g>
-                        
-                        <!-- Dropout Layer 2 -->
-                        <g transform="translate(570, 130)">
-                            <rect width="60" height="160" fill="#fff5f5" stroke="#fc8181" stroke-width="2" rx="5" ry="5" stroke-dasharray="5,5"/>
-                            <text x="30" y="-10" text-anchor="middle" fill="#2d3748" font-size="14">Dropout</text>
-                            <text x="30" y="80" text-anchor="middle" fill="#2d3748" font-size="12">20%</text>
-                        </g>
-                        
-                        <!-- Output Layer -->
-                        <g transform="translate(650, 180)">
-                            <circle r="20" fill="#ebf8ff" stroke="#3182ce" stroke-width="2"/>
-                            <text x="0" y="-30" text-anchor="middle" fill="#2d3748" font-size="14">Saída</text>
-                            <text x="0" y="4" text-anchor="middle" fill="#2d3748" font-size="12">1</text>
-                        </g>
-                        
-                        <!-- Connections -->
-                        <line x1="130" y1="150" x2="180" y2="150" stroke="#718096" stroke-width="2"/>
-                        <line x1="300" y1="150" x2="330" y2="150" stroke="#718096" stroke-width="2"/>
-                        <line x1="390" y1="150" x2="420" y2="150" stroke="#718096" stroke-width="2"/>
-                        <line x1="540" y1="150" x2="570" y2="150" stroke="#718096" stroke-width="2"/>
-                        <line x1="630" y1="150" x2="650" y2="180" stroke="#718096" stroke-width="2"/>
-                    </svg>
-                </div>
-                
-                <div class="insight">
-                    <p class="insight-title">Insight:</p>
-                    <p>A arquitetura LSTM resolve o problema do "desaparecimento do gradiente" em séries temporais longas, permitindo que o modelo "lembre" padrões relevantes mesmo quando ocorreram muitos dias atrás. As células de memória de longo prazo são particularmente eficazes para capturar tendências complexas e sazonalidades no mercado financeiro.</p>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Treinamento da Rede Neural</h3>
-                </div>
-                <p class="card-subtitle">Evolução do aprendizado durante o processo de treinamento</p>
-                
-                <div class="chart-container">
-                    <canvas id="lstmTrainingChart"></canvas>
-                </div>
-                
-                <div class="insight">
-                    <p class="insight-title">Insight:</p>
-                    <p>O modelo LSTM convergiu após 32 épocas de treinamento, usando early stopping para evitar overfitting. A perda (MSE) nos dados de validação estabilizou em torno de 0.0045, indicando que o modelo encontrou um bom equilíbrio entre precisão e generalização.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="conclusion">
-            <h2>Conclusões e Próximos Passos</h2>
-            <p>Nesta jornada de análise do IBOVESPA, evoluí de modelos estatísticos tradicionais para técnicas avançadas de deep learning, alcançando uma acurácia direcional de até 88.2% com o modelo LSTM, muito além da meta inicial de 70%.</p>
-            <p>Os modelos avançados (Prophet e LSTM) superaram significativamente o ensemble tradicional, reduzindo o erro médio e capturando padrões complexos no mercado. O Prophet revelou importantes sazonalidades semanais, enquanto o LSTM demonstrou capacidade superior de aprender padrões não-lineares dos dados.</p>
-            <p>Para evoluções futuras, pretendo explorar modelos híbridos que incorporem dados macroeconômicos, indicadores de sentimento de mercado e transformers para capturar dependências de longo alcance nos dados temporais.</p>
-        </div>
-
-        <footer>
-            <p>© 2025 JP Lucchi - Tech Challenge</p>
-            <p>Dashboard interativo desenvolvido com Chart.js</p>
-        </footer>
     </div>
-
+    
+    <footer>
+        <p>Tech Challenge - Data Analytics - Modelo Preditivo IBOVESPA - JP Lucchi</p>
+    </footer>
+    
     <script>
-        // Dados simulados baseados nas análises que fizemos
-        const lastMonthData = [
-            { date: '2025-01-31', actual: 126.135, predicted: 125.96, error: 0.18 },
-            { date: '2025-02-03', actual: 125.831, predicted: 126.24, error: -0.41 },
-            { date: '2025-02-04', actual: 125.533, predicted: 126.01, error: -0.48 },
-            { date: '2025-02-05', actual: 125.245, predicted: 125.83, error: -0.58 },
-            { date: '2025-02-06', actual: 126.472, predicted: 125.42, error: 1.05 },
-            { date: '2025-02-07', actual: 126.682, predicted: 126.65, error: 0.03 },
-            { date: '2025-02-10', actual: 127.221, predicted: 126.87, error: 0.35 },
-            { date: '2025-02-11', actual: 128.552, predicted: 127.46, error: 1.09 },
-            { date: '2025-02-12', actual: 128.092, predicted: 128.65, error: -0.56 },
-            { date: '2025-02-13', actual: 127.564, predicted: 128.24, error: -0.68 },
-            { date: '2025-02-14', actual: 127.642, predicted: 127.72, error: -0.08 },
-            { date: '2025-02-17', actual: 126.932, predicted: 127.81, error: -0.88 },
-            { date: '2025-02-18', actual: 127.601, predicted: 127.12, error: 0.48 },
-            { date: '2025-02-19', actual: 127.129, predicted: 127.82, error: -0.69 },
-            { date: '2025-02-20', actual: 127.128, predicted: 127.28, error: -0.15 },
-            { date: '2025-02-21', actual: 125.401, predicted: 127.19, error: -1.79 },
-            { date: '2025-02-24', actual: 125.980, predicted: 125.58, error: 0.40 },
-            { date: '2025-02-25', actual: 124.769, predicted: 126.12, error: -1.35 },
-            { date: '2025-02-26', actual: 124.799, predicted: 124.96, error: -0.16 },
-            { date: '2025-02-27', actual: 122.799, predicted: 124.88, error: -2.08 },
-            { date: '2025-02-28', actual: 122.799, predicted: 123.12, error: -0.32 },
-        ];
-
-        // Modelos tradicionais
-        const modelsComparison = {
-            models: ['SMA', 'Regressão Linear', 'Auto-Regressivo', 'Ensemble'],
-            dirAccuracy: [47.96, 97.28, 46.26, 82.31],
-            mae: [1.18, 2.82, 3.69, 1.75],
-            rmse: [1.47, 2.83, 4.53, 2.06],
-            r2: [0.87, 0.51, -0.26, 0.74]
-        };
-
+        // Funções para controle das abas
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Esconder todo o conteúdo das abas
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            // Remover a classe "active" de todos os botões de abas
+            tablinks = document.getElementsByClassName("tab");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            // Mostrar a aba atual e adicionar "active" no botão
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        // Dados para os gráficos
+        // Estes são dados de exemplo, que seriam substituídos pelos valores reais
+        const dates = ["28/01", "29/01", "30/01", "31/01", "01/02", "04/02", "05/02", "06/02", "07/02", "08/02", "11/02", "12/02", "13/02", "14/02", "15/02", "18/02", "19/02", "20/02", "21/02", "22/02", "25/02", "26/02", "27/02", "28/02"];
+        const realValues = [128.219, 128.552, 128.532, 127.309, 127.601, 127.128, 125.401, 125.98, 124.769, 124.799, 122.799];
+        const predictedValues = [127.459, 128.473, 128.716, 127.691, 127.527, 127.103, 125.713, 126.036, 125.018, 124.846, 123.205, 122.196];
+        const errorValues = [0.760, 0.079, 0.184, 0.382, 0.074, 0.025, 0.312, 0.056, 0.249, 0.047, 0.406];
+        
         // Importância das features
-        const featureImportance = [
-            { name: 'SMA 5 dias', value: 2.5 },
-            { name: 'Lag 3 close', value: 0.5 },
-            { name: 'Lag 2 close', value: 0.5 },
-            { name: 'Momentum 5', value: 0.5 },
-            { name: 'Lag 1 close', value: 0.5 },
-            { name: 'High', value: 0.24 },
-            { name: 'Low', value: 0.22 },
-            { name: 'Daily Range', value: 0.09 },
-            { name: 'Outras', value: 0.42 }
-        ];
-
-        // Dados para os modelos avançados
-        const advancedModelsData = {
-            labels: ['Tradicional', 'Prophet', 'LSTM', 'Ensemble-Avançado'],
-            accuracy: [82.31, 85.40, 88.20, 89.75],
-            mae: [1.75, 1.50, 1.30, 1.25],
-            rmse: [2.06, 1.80, 1.70, 1.65]
-        };
+        const featureNames = ['Log Return', 'Mínima', 'True Range', 'Máxima', 'Trend-30', 'Abertura', 'Trend-5', 'Trend-10', 'MA-10', 'MA-5'];
+        const featureImportance = [76.59, 6.85, 6.72, 6.64, 0.75, 0.57, 0.57, 0.51, 0.23, 0.16];
         
-        // Dados para componentes do Prophet
-        const prophetTrendData = {
-            labels: ['Jan-25', 'Fev-25', 'Mar-25', 'Abr-25', 'Mai-25', 'Jun-25', 'Jul-25', 'Ago-25', 'Set-25', 'Out-25', 'Nov-25', 'Dez-25'],
-            values: [120, 122, 123.5, 124.8, 126.2, 127.5, 128.9, 130.4, 131.8, 133.2, 134.5, 136.0]
-        };
-        
-        const prophetWeeklyData = {
-            labels: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'],
-            values: [0.8, -0.3, 0.6, 0.1, -0.9]
-        };
-
-        // Dados para o gráfico de treinamento LSTM
-        const lstmTrainingData = {
-            labels: Array.from({length: 50}, (_, i) => i + 1),
-            train_loss: [0.0952, 0.0423, 0.0354, 0.0301, 0.0267, 0.0235, 0.0214, 0.0194, 0.0178, 0.0164, 
-                        0.0152, 0.0142, 0.0133, 0.0125, 0.0118, 0.0112, 0.0106, 0.0101, 0.0097, 0.0092, 
-                        0.0088, 0.0085, 0.0081, 0.0078, 0.0076, 0.0073, 0.0071, 0.0069, 0.0067, 0.0065, 
-                        0.0063, 0.0061, 0.0060, 0.0058, 0.0057, 0.0055, 0.0054, 0.0053, 0.0052, 0.0051,
-                        0.0050, 0.0049, 0.0048, 0.0047, 0.0046, 0.0045, 0.0044, 0.0043, 0.0042, 0.0041],
-            val_loss: [0.0645, 0.0312, 0.0286, 0.0254, 0.0231, 0.0213, 0.0196, 0.0183, 0.0172, 0.0163, 
-                      0.0155, 0.0148, 0.0142, 0.0137, 0.0132, 0.0128, 0.0124, 0.0121, 0.0118, 0.0115, 
-                      0.0112, 0.0110, 0.0107, 0.0105, 0.0103, 0.0101, 0.0099, 0.0097, 0.0096, 0.0094, 
-                      0.0093, 0.0092, 0.0091, 0.0090, 0.0092, 0.0093, 0.0094, 0.0095, 0.0096, 0.0098,
-                      0.0099, 0.0101, 0.0102, 0.0104, 0.0105, 0.0107, 0.0108, 0.0110, 0.0112, 0.0114]
-        };
-
-        // Formatadores
-        const formatDate = (dateStr) => {
-            const date = new Date(dateStr);
-            return `${date.getDate()}/${date.getMonth() + 1}`;
-        };
-
-        // Variáveis para controle de estado
-        let currentTimeframe = 'month';
-        let currentMetric = 'dirAccuracy';
-        let predictionChart, modelComparisonChart, featureImportanceChart, errorChart, 
-            advancedModelsChart, prophetTrendChart, prophetWeeklyChart, lstmTrainingChart;
-
-        // Função para filtrar dados com base no período selecionado
-        const filterData = (timeframe) => {
-            let filtered = [...lastMonthData];
-            if (timeframe === 'week') {
-                filtered = lastMonthData.slice(-7);
-            } else if (timeframe === 'twoWeeks') {
-                filtered = lastMonthData.slice(-14);
-            }
-            return filtered;
-        };
-
-        // Função para criar o gráfico de previsões
-        const createPredictionChart = (data) => {
-            const ctx = document.getElementById('predictionChart').getContext('2d');
-            
-            if (predictionChart) {
-                predictionChart.destroy();
-            }
-            
-            predictionChart = new Chart(ctx, {
+        // Configurar os gráficos quando o DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', function() {
+            // Visão Geral - Gráfico de linha comparando real vs previsto
+            const overviewChart = new Chart(document.getElementById('overview-chart'), {
                 type: 'line',
                 data: {
-                    labels: data.map(d => formatDate(d.date)),
+                    labels: dates.slice(-20),
                     datasets: [
                         {
                             label: 'Valor Real',
-                            data: data.map(d => d.actual),
-                            backgroundColor: 'rgba(66, 153, 225, 0.2)',
-                            borderColor: 'rgba(66, 153, 225, 1)',
+                            data: realValues.slice(-20),
+                            borderColor: '#3a86ff',
+                            backgroundColor: 'rgba(58, 134, 255, 0.1)',
                             borderWidth: 2,
-                            pointRadius: 4,
-                            tension: 0.1
+                            tension: 0.1,
+                            pointRadius: 3
                         },
                         {
-                            label: 'Previsão',
-                            data: data.map(d => d.predicted),
-                            backgroundColor: 'rgba(72, 187, 120, 0.2)',
-                            borderColor: 'rgba(72, 187, 120, 1)',
+                            label: 'Valor Previsto',
+                            data: predictedValues.slice(-20),
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
                             borderWidth: 2,
-                            pointRadius: 4,
                             borderDash: [5, 5],
-                            tension: 0.1
+                            tension: 0.1,
+                            pointRadius: 3
                         }
                     ]
                 },
@@ -743,12 +535,16 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.raw.toFixed(3)}`;
-                                }
+                        title: {
+                            display: true,
+                            text: 'Previsão vs. Real - IBOVESPA (Últimos 20 dias)',
+                            font: {
+                                size: 16
                             }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
                         },
                         legend: {
                             position: 'top',
@@ -756,51 +552,113 @@
                     },
                     scales: {
                         y: {
-                            beginAtZero: false,
-                            grid: {
-                                drawBorder: false
+                            title: {
+                                display: true,
+                                text: 'Pontos'
                             }
                         },
                         x: {
-                            grid: {
-                                display: false
+                            title: {
+                                display: true,
+                                text: 'Data'
                             }
                         }
                     }
                 }
             });
-        };
-
-        // Função para criar o gráfico de comparação de modelos
-        const createModelComparisonChart = (metric) => {
-            const ctx = document.getElementById('modelComparisonChart').getContext('2d');
             
-            if (modelComparisonChart) {
-                modelComparisonChart.destroy();
-            }
-            
-            const metricLabels = {
-                dirAccuracy: 'Acurácia Direcional (%)',
-                mae: 'MAE',
-                rmse: 'RMSE',
-                r2: 'R²'
-            };
-
-            const colors = metric === 'r2' 
-                ? modelsComparison.r2.map(val => val >= 0 ? 'rgba(72, 187, 120, 0.7)' : 'rgba(245, 101, 101, 0.7)')
-                : metric === 'dirAccuracy' 
-                    ? 'rgba(66, 153, 225, 0.7)' 
-                    : 'rgba(237, 137, 54, 0.7)';
-            
-            modelComparisonChart = new Chart(ctx, {
-                type: 'bar',
+            // Previsão - Gráfico detalhado de previsão
+            const predictionChart = new Chart(document.getElementById('prediction-chart'), {
+                type: 'line',
                 data: {
-                    labels: modelsComparison.models,
+                    labels: dates.slice(-12),
                     datasets: [
                         {
-                            label: metricLabels[metric],
-                            data: modelsComparison[metric],
-                            backgroundColor: colors,
+                            label: 'Valor Real',
+                            data: realValues.slice(-11),
+                            borderColor: '#3a86ff',
+                            backgroundColor: 'rgba(58, 134, 255, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Valor Previsto',
+                            data: predictedValues.slice(-12),
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1,
+                            pointRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Previsão Detalhada - IBOVESPA (Com projeção para 03/03)',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        legend: {
+                            position: 'top',
+                        },
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    xMin: dates.length - 2,
+                                    xMax: dates.length - 2,
+                                    borderColor: 'rgb(169, 169, 169)',
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        content: 'Atual | Previsão',
+                                        enabled: true,
+                                        position: 'center'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: Math.min(...realValues, ...predictedValues) - 1,
+                            max: Math.max(...realValues, ...predictedValues) + 1,
+                            title: {
+                                display: true,
+                                text: 'Pontos'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Data'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Previsão - Gráfico de erro
+            const errorChart = new Chart(document.getElementById('error-chart'), {
+                type: 'bar',
+                data: {
+                    labels: dates.slice(-11),
+                    datasets: [
+                        {
+                            label: 'Erro Absoluto',
+                            data: errorValues,
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
                             borderWidth: 1
                         }
                     ]
@@ -809,412 +667,100 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
+                        title: {
+                            display: true,
+                            text: 'Erro de Previsão (Últimos 11 dias)',
+                            font: {
+                                size: 14
+                            }
+                        },
                         legend: {
                             display: false
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${metricLabels[metric]}: ${context.raw.toFixed(2)}`;
-                                }
-                            }
-                        }
                     },
                     scales: {
                         y: {
-                            beginAtZero: metric !== 'r2',
-                            grid: {
-                                drawBorder: false
-                            },
+                            beginAtZero: true,
                             title: {
                                 display: true,
-                                text: metricLabels[metric]
+                                text: 'Erro Absoluto'
                             }
                         },
                         x: {
-                            grid: {
-                                display: false
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         }
                     }
                 }
             });
-        };
-
-        // Função para criar o gráfico de importância das features
-        const createFeatureImportanceChart = () => {
-            const ctx = document.getElementById('featureImportanceChart').getContext('2d');
             
-            if (featureImportanceChart) {
-                featureImportanceChart.destroy();
-            }
-            
-            // Ordenar por importância
-            const sortedFeatures = [...featureImportance].sort((a, b) => b.value - a.value);
-            
-            featureImportanceChart = new Chart(ctx, {
-                type: 'pie',
+            // Features - Gráfico de barras horizontais
+            const featuresChart = new Chart(document.getElementById('features-chart'), {
+                type: 'bar',
                 data: {
-                    labels: sortedFeatures.map(f => f.name),
+                    labels: featureNames,
                     datasets: [
                         {
-                            data: sortedFeatures.map(f => f.value),
+                            label: 'Importância (%)',
+                            data: featureImportance,
                             backgroundColor: [
-                                'rgba(66, 153, 225, 0.7)',
-                                'rgba(72, 187, 120, 0.7)',
-                                'rgba(237, 137, 54, 0.7)',
-                                'rgba(159, 122, 234, 0.7)',
-                                'rgba(245, 101, 101, 0.7)',
-                                'rgba(56, 178, 172, 0.7)',
-                                'rgba(250, 202, 21, 0.7)',
-                                'rgba(237, 100, 166, 0.7)',
-                                'rgba(160, 174, 192, 0.7)'
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                                'rgba(201, 203, 207, 0.6)',
+                                'rgba(201, 203, 207, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgb(54, 162, 235)',
+                                'rgb(54, 162, 235)',
+                                'rgb(54, 162, 235)',
+                                'rgb(54, 162, 235)',
+                                'rgb(153, 102, 255)',
+                                'rgb(153, 102, 255)',
+                                'rgb(153, 102, 255)',
+                                'rgb(153, 102, 255)',
+                                'rgb(201, 203, 207)',
+                                'rgb(201, 203, 207)'
                             ],
                             borderWidth: 1
                         }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                boxWidth: 15,
-                                font: {
-                                    size: 11
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return `${context.label}: ${percentage}% (${value.toFixed(2)})`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        };
-
-        // Função para criar o gráfico de erros
-        const createErrorChart = (data) => {
-            const ctx = document.getElementById('errorChart').getContext('2d');
-            
-            if (errorChart) {
-                errorChart.destroy();
-            }
-            
-            errorChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.map(d => formatDate(d.date)),
-                    datasets: [
-                        {
-                            label: 'Erro',
-                            data: data.map(d => d.error),
-                            backgroundColor: data.map(d => d.error > 0 ? 'rgba(245, 101, 101, 0.7)' : 'rgba(72, 187, 120, 0.7)'),
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
+                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
                             display: false
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Erro: ${context.raw.toFixed(3)}`;
-                                }
+                        title: {
+                            display: true,
+                            text: 'Importância Relativa das Features (%)',
+                            font: {
+                                size: 16
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: false,
-                            grid: {
-                                drawBorder: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Erro'
-                            },
-                            suggestedMin: -3,
-                            suggestedMax: 3
-                        },
                         x: {
-                            grid: {
-                                display: false
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Importância (%)'
                             }
                         }
                     }
                 }
             });
-        };
-
-        // Função para criar o gráfico de modelos avançados
-        const createAdvancedModelsChart = () => {
-            const ctx = document.getElementById('advancedModelsChart').getContext('2d');
-            
-            if (advancedModelsChart) {
-                advancedModelsChart.destroy();
-            }
-            
-            advancedModelsChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: advancedModelsData.labels,
-                    datasets: [
-                        {
-                            label: 'Acurácia Direcional (%)',
-                            data: advancedModelsData.accuracy,
-                            backgroundColor: 'rgba(66, 153, 225, 0.7)',
-                            borderColor: 'rgba(66, 153, 225, 1)',
-                            borderWidth: 1,
-                            yAxisID: 'y'
-                        },
-                        {
-                            label: 'MAE',
-                            data: advancedModelsData.mae,
-                            backgroundColor: 'rgba(72, 187, 120, 0.7)',
-                            borderColor: 'rgba(72, 187, 120, 1)',
-                            borderWidth: 1,
-                            yAxisID: 'y1'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            title: {
-                                display: true,
-                                text: 'Acurácia Direcional (%)'
-                            },
-                            min: 80,
-                            max: 95
-                        },
-                        y1: {
-                            type: 'linear',
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'MAE (menor é melhor)'
-                            },
-                            min: 1.0,
-                            max: 2.0,
-                            reverse: true,
-                            grid: {
-                                drawOnChartArea: false
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const value = context.raw;
-                                    return `${label}: ${value.toFixed(2)}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        };
-        
-        // Funções para criar os gráficos do Prophet
-        const createProphetTrendChart = () => {
-            const ctx = document.getElementById('prophetTrendChart').getContext('2d');
-            
-            if (prophetTrendChart) {
-                prophetTrendChart.destroy();
-            }
-            
-            prophetTrendChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: prophetTrendData.labels,
-                    datasets: [{
-                        label: 'Tendência',
-                        data: prophetTrendData.values,
-                        borderColor: 'rgba(66, 153, 225, 1)',
-                        backgroundColor: 'rgba(66, 153, 225, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Pontos IBOVESPA'
-                            }
-                        }
-                    }
-                }
-            });
-        };
-        
-        const createProphetWeeklyChart = () => {
-            const ctx = document.getElementById('prophetWeeklyChart').getContext('2d');
-            
-            if (prophetWeeklyChart) {
-                prophetWeeklyChart.destroy();
-            }
-            
-            prophetWeeklyChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: prophetWeeklyData.labels,
-                    datasets: [{
-                        label: 'Efeito Dia da Semana',
-                        data: prophetWeeklyData.values,
-                        backgroundColor: prophetWeeklyData.values.map(v => 
-                            v >= 0 ? 'rgba(72, 187, 120, 0.7)' : 'rgba(245, 101, 101, 0.7)'
-                        ),
-                        borderColor: prophetWeeklyData.values.map(v => 
-                            v >= 0 ? 'rgba(72, 187, 120, 1)' : 'rgba(245, 101, 101, 1)'
-                        ),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Impacto (pontos)'
-                            }
-                        }
-                    }
-                }
-            });
-        };
-
-        // Função para criar o gráfico de treinamento LSTM
-        const createLSTMTrainingChart = () => {
-            const ctx = document.getElementById('lstmTrainingChart').getContext('2d');
-            
-            if (lstmTrainingChart) {
-                lstmTrainingChart.destroy();
-            }
-            
-            lstmTrainingChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: lstmTrainingData.labels,
-                    datasets: [
-                        {
-                            label: 'Perda no Treino',
-                            data: lstmTrainingData.train_loss,
-                            borderColor: 'rgba(66, 153, 225, 1)',
-                            backgroundColor: 'rgba(66, 153, 225, 0.1)',
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0.4
-                        },
-                        {
-                            label: 'Perda na Validação',
-                            data: lstmTrainingData.val_loss,
-                            borderColor: 'rgba(237, 137, 54, 1)',
-                            backgroundColor: 'rgba(237, 137, 54, 0.1)',
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0.4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        annotation: {
-                            annotations: {
-                                line1: {
-                                    type: 'line',
-                                    xMin: 32,
-                                    xMax: 32,
-                                    borderColor: 'rgba(245, 101, 101, 0.7)',
-                                    borderWidth: 2,
-                                    borderDash: [5, 5]
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Perda (MSE)'
-                            },
-                            beginAtZero: true
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Época'
-                            }
-                        }
-                    }
-                }
-            });
-        };
-        
-        // Atualizar período
-        const updateTimeframe = (timeframe) => {
-            currentTimeframe = timeframe;
-            const data = filterData(timeframe);
-            
-            // Atualizar gráficos
-            createPredictionChart(data);
-            createErrorChart(data);
-            
-            // Atualizar botões
-            document.querySelectorAll('.button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`.button[onclick="updateTimeframe('${timeframe}')"]`).classList.add('active');
-        };
-
-        // Atualizar métrica
-        const updateMetricChart = () => {
-            const select = document.getElementById('metricSelect');
-            currentMetric = select.value;
-            createModelComparisonChart(currentMetric);
-        };
-
-        // Inicializar todos os gráficos quando a página carregar
-        window.onload = function() {
-            const initialData = filterData(currentTimeframe);
-            createPredictionChart(initialData);
-            createModelComparisonChart(currentMetric);
-            createFeatureImportanceChart();
-            createErrorChart(initialData);
-            
-            // Adicionar os novos gráficos
-            createAdvancedModelsChart();
-            createProphetTrendChart();
-            createProphetWeeklyChart();
-            createLSTMTrainingChart();
-        };
+        });
     </script>
+</body>
+</html>
